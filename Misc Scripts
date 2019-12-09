@@ -1,0 +1,12 @@
+# Run a Group Policy update on a remote device
+$CN = (Read-Host "Enter the requested computer name")
+Enter-PsSession $CN
+Gpupdate /force
+
+# The script below is cobbled together from a few different scripts I found online, but it seemed
+# more clean than the others.
+# Check Windows Build Number on remote device:
+$CN = (Read-Host "Input Computer name you would like to check")
+(Enter-PsSession $CN)
+(Get-ItemProperty -Path "Registry::HKLM\SOFTWARE\MICROSOFT\WINDOWS NT\CurrentVersion" -Name ReleaseId).ReleaseId
+Exit-PsSession
