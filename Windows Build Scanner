@@ -1,0 +1,58 @@
+# Found that this works fairly decently at scanning a network for build numbers.
+# In its current incarnation, you'll need to create the text files beforehand.
+# newvuln.txt machinenames.txt
+$build_number= ((Read-Host "Input the build number you would like to check"))
+
+Get-Content C:\Windows\temp\ip-addresses.txt | ForEach {
+If((Test-Connection -Count 2 -ErrorAction SilentlyContinue $_))
+{
+Try{
+$RegSession = $null
+$keypath = $null
+$openkey = $null
+$RegSession = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$_)
+$keypath = 'System\CurrentControlSet\Control\ComputerName\ActiveComputerName'
+$openkey = $RegSession.OpenSubKey($keypath)
+$hostname>>'C:\Windows\temp\machinenames.txt'
+"Primary Method successful: obtained hostname for " + $_
+}
+
+Catch
+{
+Try
+    {
+$hostname = ([System.Net.Dns]::GetHostbyAddress($_)).Hostname
+If($? -eq $True)
+    {
+    $hostname >> 'C:\Windows\temp\machinenames.txt'
+    "Secondary method successful: "+$_+":Hostname resolved to "+$hostname
+    }
+Else
+    {
+    $_+": Cannot resolve hostname"
+    }
+    }
+Catch
+    {
+"No connection successful:"+$_
+    }
+}
+}
+Else
+    {
+"No Connection available to " + $_
+    }
+
+}
+$compname = Get-Content -Path 'C:\Windows\temp\machinenames.txt'
+
+Invoke-Command -ComputerName $compname -ScriptBlock{
+    $compliance = (Get-ItemProperty -Path "Registry::HKLM\SOFTWARE\MICROSOFT\Windows NT\CurrentVersion" -Name ReleaseId).ReleaseID
+    If($compliance -eq $buildnumber){
+        $env:computername+" Is Compliant"
+    }
+    Else{
+    $env:computername+" is not compliant: "+$compliance
+    }
+} | Out-File C:\Windows\temp\newvuln.txt
+.\C:\Windows\temp\newvuln.txt
