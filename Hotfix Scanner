@@ -1,0 +1,9 @@
+# This guy checks a range of machines for a given hotfix. Super Hacky, but it works, so hey.
+
+# Basically, you pull the content from a newline separated document that has hostnames, check to see if that hostname
+# has a resolution for a given hotfix, and if not, output it to the screen. I still need to figure out how to get it to 
+# output to a csv. 
+
+$Hotfix = (Read-Host "Input the build you are checking")
+$cname = (Get-Content C:\Users\$env:username\documents\machinenames.txt)
+Invoke-Command -ComputerName $cname {if(!($testme = Get-Hotfix -id $Hotfix)) {$env:computername}} -ErrorAction SilentlyContinue
