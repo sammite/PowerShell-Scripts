@@ -17,3 +17,21 @@ else{
 Get-Hotfix -id $Hotfix
 }
 } -ErrorAction SilentlyContinue >> C:\Users\$env:username\documents\unpatched.txt
+
+
+# Obtain IP's and current user for unpatched machines.
+
+$host_list = Get-Content C:\Users\$env:username\documents\unpatched.txt
+New-Item C:\Users\$env:username\documents\unpatchedwithinfo.txt -ErrorAction SilentlyContinue
+Clear-Content C:\Users\$env:username\documents\unpatchedwithinfo.txt
+
+
+Write-Output 'IP ADDRESS,HOSTNAME,Loggedin_User' >> C:\Users\$env:username\documents\unpatchedwithinfo.txt
+
+Foreach($h in $host_list){
+$newIP = Test-Connection $h -count 1
+$ipresult = $newIP.IPV4Address.IpAddressToString
+$UsernameObj = Get-CIMInstance -ComputerName $h -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue | Select-Object Username
+$finalstring = $ipresult + ','+$h+','+ $usernameObj.Username
+
+Write-Output $finalstring >> C:\Users\$env:username\documents\unpatchedwithinfo.txt
