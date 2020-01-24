@@ -1,9 +1,19 @@
 # This guy checks a range of machines for a given hotfix. Super Hacky, but it works, so hey.
 
-# Basically, you pull the content from a newline separated document that has hostnames, check to see if that hostname
-# has a resolution for a given hotfix, and if not, output it to the screen. I still need to figure out how to get it to 
-# output to a csv. 
+# Setup your text files here. I have all of my endpoint devices in a newline separated txt called "machinenames.txt" beforehand.
+# I have a couple of other scripts that can create/manipulate that file beforehand. I'll get them all into this repo eventually.
 
-$Hotfix = (Read-Host "Input the hotfix number you are checking")
+New-Item C:\Users\$env:username\documents\unpatched.txt -ErrorAction SilentlyContinue
+Clear-Content C:\Users\$env:username\documents\unpatched.txt
 $cname = (Get-Content C:\Users\$env:username\documents\machinenames.txt)
-Invoke-Command -ComputerName $cname {if(!($testme = Get-Hotfix -id $Hotfix)) {$env:computername}} -ErrorAction SilentlyContinue
+
+# Basically, you pull the content from a newline separated document that has hostnames, check to see if that hostname
+# has a resolution for a given hotfix, and if not, output it to the text file "unpatched.txt"
+
+Invoke-Command -ComputerName $cname {
+$hotfix = #insert hotfix here
+if(!($testme = Get-Hotfix -id $Hotfix)) {$env:computername}
+else{
+Get-Hotfix -id $Hotfix
+}
+} -ErrorAction SilentlyContinue >> C:\Users\$env:username\documents\unpatched.txt
