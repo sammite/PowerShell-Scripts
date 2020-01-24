@@ -8,5 +8,6 @@ Gpupdate /force
 # Check Windows Build Number on remote device:
 $CN = (Read-Host "Input Computer name you would like to check")
 (Enter-PsSession $CN)
-(Get-ItemProperty -Path "Registry::HKLM\SOFTWARE\MICROSOFT\WINDOWS NT\CurrentVersion" -Name ReleaseId).ReleaseId
+$build = (Get-ItemProperty -Path "Registry::HKLM\SOFTWARE\MICROSOFT\WINDOWS NT\CurrentVersion" -Name ReleaseId).ReleaseId
+$env:computername + ' is on Windows build #' + $build
 Exit-PsSession
