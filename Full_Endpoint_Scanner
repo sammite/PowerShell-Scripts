@@ -1,3 +1,108 @@
 # The following script scans all endpoints in a given IP range (notated by the ip-addresses.txt file,) and checks them for 
-# Windows build, last hotfix, any logged in users, and hostname. 
+# Windows build, last hotfix, any logged in users, and hostname. In this version, all files will be directly placed into Public.
+# That's probably not a good idea irl. 
+
+# create the files we need if they do not exist already. 
+
+New-Item C:\Users\Public\host_list.txt -ErrorAction SilentlyContinue
+Clear-Content C:\Users\Public\host_list.txt -ErrorAction SilentlyContinue
+$host_list = 'C:\Users\Public\host_list.txt'
+
+New-Item C:\Users\Public\machinenames.txt -ErrorAction SilentlyContinue
+Clear-Content C:\Users\Public\machinenames.txt -ErrorAction SilentlyContinue
+$machinenames = 'C:\Users\Public\machinenames.txt'
+
+# Get the endpoints from the IP address lists. 
+Get-Content C:\Users\Public\ip-addresses.txt | ForEach {
+
+# Check if there is a host at the IP we can even ping.
+If((Test-Connection -Count 2 -ErrorAction SilentlyContinue $_))
+{
+
+# Attempts to get the hostname from a registry key. Usually works.
+Try{
+$RegSession = $null
+$keypath = $null
+$openkey = $null
+$RegSession = [Microsoft.Win32.RegistryKey]::OpenRemoteBaseKey('LocalMachine',$_)
+$keypath = 'System\CurrentControlSet\Control\ComputerName\ActiveComputerName'
+$openkey = $RegSession.OpenSubKey($keypath)
+$hostname >> $machinenames
+"Primary Method successful: obtained hostname for " + $_
+}
+
+Catch
+{
+Try
+
+# Try this query if the first is not effective. Might not be necessary. 
+    {
+$hostname = ([System.Net.Dns]::GetHostEntry($_)).Hostname
+If($? -eq $True)
+    {
+    $hostname >> $machinenames
+    "Secondary method successful: "+$_+":Hostname resolved to "+$hostname
+    }
+Else
+    {
+    $_+": Cannot resolve hostname"
+    }
+    }
+Catch
+    {
+"No connection successful:"+$_
+    }
+}
+}
+Else
+    {
+"No Connection available to " + $_
+    }
+
+}
+
+# Now the fun begins. The below will rapidly pull information from the list of machine names.
+
+New-Item C:\Users\Public\hostresolvedlist.txt -ErrorAction SilentlyContinue
+
+Clear-Content C:\Users\Public\hostresolvedlist.txt
+Write-Output 'IP,HOSTNAME,BUILD #,ACTIVE USER,MAC ADDRESS,LAST HOTFIX' >> C:\Users\Public\hostresolvedlist.txt
+
+$h = Get-Content -Path $machinenames
+Invoke-Command -ComputerName $h{
+
+# Resolves the hostname back to an IP. Kind of a waste, as we have the IP addresses from before. Cooking up a workaround.
+$New_Ip = Get-CimInstance -computername $h win32_networkadapterconfiguration | select ipaddress
+$ipresult = $newIP.ipaddress | select -first 1
+
+# Get your windows build number
+$build = (Get-ItemProperty -Path "Registry::HKLM\SOFTWARE\MICROSOFT\Windows NT\CurrentVersion" -Name ReleaseId).ReleaseID
+    
+# Get current user. Returns nothing if no one is logged in.
+$UsernameObj = Get-CimInstance -ComputerName $h -ClassName Win32_ComputerSystem -ErrorAction SilentlyContinue | Select-Object Username
+
+# Get the MAC address of your ethernet port. If it's the only adapter enabled, this won't be a problem. Otherwise,
+# may need to be a little more complicated.
+$Raw_Mac = Get-CimInstance -computername $h win32_networkadapterconfiguration -ErrorAction SilentlyContinue | select macaddress 
+$Mac_Final = $Raw_Mac.macaddress | select -first 1
+
+# Gets the most recent hotfix
+$Hotfix_Raw = get-hotfix | select hotfixID
+$hotfix_Result = $Hotfix_Raw.hotfigID | select -last 1
+
+# Turns everything into a string with commas as separators for our CSV export later.
+$finalstring = $ipresult + ',' + $env:computername + ',' + $build + ',' + $usernameObj.UserName + ','+ $Mac_Final + ',' + $Hotfix_Result
+#Outputs the final string.
+$finalstring
+} >> C:\Users\Public\hostresolvedlist.txt
+
+# Gets the number of endpoints. 
+$Lines_Raw = Get-Content C:\Users\Public\hostresolvedlist.txt | Measure-object -Line 
+$Total = $Lines_Raw.lines -1
+
+# Get the time and date, transform into a csv, then HTML
+$timestamp = Get-Date
+import-csv Get-Content C:\Users\Public\hostresolvedlist.txt |
+  ConvertTo-HTML -Head " Total Managed endpoints $Total Last updated $timestamp " -Title "Endpoint Scan" |
+    Out-File "C:\Users\Public\hostresolvedlist.html"
 
