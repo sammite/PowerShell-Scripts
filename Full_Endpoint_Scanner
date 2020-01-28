@@ -1,0 +1,3 @@
+# The following script scans all endpoints in a given IP range (notated by the ip-addresses.txt file,) and checks them for 
+# Windows build, last hotfix, any logged in users, and hostname. 
+
