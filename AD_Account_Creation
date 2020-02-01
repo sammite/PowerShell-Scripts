@@ -7,6 +7,7 @@
 # shouldn't hold information anyway.
 New-Item C:\Users\Public\Documents\users.txt -ErrorAction SilentlyContinue
 Clear-Content C:\Users\Public\Documents\users.txt
+"username,AccountExpirationDate,Description" >> C:\Users\Public\Documents\users.txt
 
 Add-Type -AssemblyName Microsoft.VisualBasic
 $num_of_Accounts = [Microsoft.VisualBasic.Interaction]::InputBox("How many accounts are you creating?","Account Creation")
@@ -35,7 +36,7 @@ $Position = $name_array[3]
 $fullname = $Last + "," + $First + " " + $Middle + " " + $Position
 $logonname = ($last + $first)
 
-new-ADUser -path $path -Enabled:True -AccountPassword $passw -ChangePasswordatLogon:$True -GivenName $First -Surname $Last -Name $Fullname 
+new-ADUser -path $path -Enabled:$True -AccountPassword $passw -ChangePasswordatLogon:$True -GivenName $First -Surname $Last -Name $Fullname 
 -Displayname $fullname -UserPrincipalName ($logonname + "@yourdomain") -SamAccountName $logonname -AccountExpirationDate $obj.AccountExpirationDate
 -Initials $Middle -Description $obj.description
 }
