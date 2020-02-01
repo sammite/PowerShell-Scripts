@@ -1,0 +1,42 @@
+# I know there are 500 different ways to automate account creation, but this one is my spin on it. 
+# Prompts for the number of accounts to be made, then gives a single prompt box for each. 
+# Obviously I have certain settings that are unique to the org I wrote it for originally, (sanitized)
+# But should be easy to adapt. 
+
+# Use the necessary file path. Public is of course, not really a secure place for this, but the files
+# shouldn't hold information anyway.
+New-Item C:\Users\Public\Documents\users.txt -ErrorAction SilentlyContinue
+Clear-Content C:\Users\Public\Documents\users.txt
+
+Add-Type -AssemblyName Microsoft.VisualBasic
+$num_of_Accounts = [Microsoft.VisualBasic.Interaction]::InputBox("How many accounts are you creating?","Account Creation")
+
+foreach($i in (1..$num_of_Accounts)){
+$Acc_Title = 'Account Creation'
+$Acc_Msg = "enter the user info with a % symbol between each of these rows.`n1. Last First Initial Position`n2.12/12/2020`n"
+
+$values = [Microsoft.VisualBasic.Interaction]::InputBox($Acc_Msg,$Acc_Title)
+
+$values = $values.Replace(",""")
+$values = $values.Replace("%"",")
+$values >> C:\Users\Public\Documents\users.txt
+
+$userlist = import-csv C:\Users\Public\Documents\users.txt
+
+$passw = (Read-Host -AsSecureString "Input Password")
+$path = PATH TO YOUR OU HERE
+
+foreach($obj in $userlist){
+$Name_Array = ($obj.username).split(" ")
+$Last = $name_array[0]
+$First = $name_array[1]
+$Middle = $name_array[2]
+$Position = $name_array[3]
+$fullname = $Last + "," + $First + " " + $Middle + " " + $Position
+$logonname = ($last + $first)
+
+new-ADUser -path $path -Enabled:True -AccountPassword $passw -ChangePasswordatLogon:$True -GivenName $First -Surname $Last -Name $Fullname 
+-Displayname $fullname -UserPrincipalName ($logonname + "@yourdomain") -SamAccountName $logonname -AccountExpirationDate $obj.AccountExpirationDate
+-Initials $Middle -Description $obj.description
+}
+}
