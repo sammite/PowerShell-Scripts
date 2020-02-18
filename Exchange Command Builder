@@ -1,0 +1,16 @@
+# My Microsoft Exchange server hates me and won't let me paste powershell commands the way I do on my other stuff.
+# This is my hacky way of getting around the limitations of the system. 
+# I'm sorry in advance for how this is probably not even remotely the best way to do this.
+
+$Mail_Name = (Read-Host "Input the name of the email account you are creating, with spaces ")
+
+$Mush_Mail_Name = $Mail_Name.Replace(" ","")
+$Mail_Name = "`"" + $Mail_Name + "`""
+$Principal_Name = $Mush_Mail_Name + "@contoso.com"
+$Org_Unit = "contoso.com/Users/Emails"
+Echo "`nnew-mailbox -name $Mail_Name -UserPrincipalName $Principal_Name -alias $Mush_Mail_Name -organizationalunit $Org_Unit -database contoso1 `n"
+
+"Copy the above, paste into exchange server powershell after adding the snapin, and boom, you're done."
+
+
+ 
