@@ -1,6 +1,7 @@
 # The following script scans all endpoints in a given IP range (notated by the ip-addresses.txt file,) and checks them for 
 # Windows build, last hotfix, any logged in users, and hostname. In this version, all files will be directly placed into Public.
-# That's probably not a good idea irl. 
+# That's probably not a good idea in real life, it's for example purposes.
+# Skip to "Now the fun begins" if you can get hostnames 
 
 # create the files we need if they do not exist already. 
 
@@ -13,6 +14,8 @@ Clear-Content C:\Users\Public\machinenames.txt -ErrorAction SilentlyContinue
 $machinenames = 'C:\Users\Public\machinenames.txt'
 
 # Get the endpoints from the IP address lists. 
+# You'll need to populate this manually the way the script is currently 
+# written. Eventually I'll fix that to be semi automated.
 Get-Content C:\Users\Public\ip-addresses.txt | ForEach {
 
 # Check if there is a host at the IP we can even ping.
@@ -61,7 +64,9 @@ Else
 
 }
 
+
 # Now the fun begins. The below will rapidly pull information from the list of machine names.
+# If you can obtain the machine names from a dhcp pool or something, you can skip the above and just put them in the "hostresolvedlist.txt"
 
 New-Item C:\Users\Public\hostresolvedlist.txt -ErrorAction SilentlyContinue
 
@@ -105,4 +110,16 @@ $timestamp = Get-Date
 import-csv Get-Content C:\Users\Public\hostresolvedlist.txt |
   ConvertTo-HTML -Head " Total Managed endpoints $Total Last updated $timestamp " -Title "Endpoint Scan" |
     Out-File "C:\Users\Public\hostresolvedlist.html"
+
+# Create a log file. 
+$Day_Stamp = get-Date -format "MM.dd.yyyy-HH.mm"
+$Record_of_Scan = "EndpointScanner" + $Day_Stamp + ".html"
+
+copy-item -path "C:\Users\Public\hostresolvedlist.html" -destination "C:\Users\Public\Scan_Archive\hostresolvedlist.html"
+Rename-Item -path "C:\Users\Public\Scan_Archive\hostresolvedlist.html" -NewName $title
+
+
+
+
+
 
