@@ -1,7 +1,7 @@
 # The following script scans all endpoints in a given IP range (notated by the ip-addresses.txt file,) and checks them for 
 # Windows build, last hotfix, any logged in users, and hostname. In this version, all files will be directly placed into Public.
 # That's probably not a good idea in real life, it's for example purposes.
-# Skip to "Now the fun begins" if you can get hostnames 
+# Skip to "Now the fun begins" if you can get hostnames from a DHCP pool or something.
 
 # create the files we need if they do not exist already. 
 
