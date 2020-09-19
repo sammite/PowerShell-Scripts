@@ -1,0 +1,30 @@
+# I got tired of writing out headers or copy/paste/editing them so I wrote this script.
+# Easy to edit for the header requirements of your business/school/personal life.
+
+
+#******************************************************************
+cls
+
+# Get user input for important fields
+$FileString = (Read-Host -Prompt "Filename") + ".java" 
+$Author = Read-Host -Prompt "Author(s)"
+$Desc = Read-Host -Prompt "Description"
+$Date = Get-Date
+
+# Assemble string formatted to the std header format for my class.
+
+$useString = @"
+/** 
+ * File: $FileString
+ * Class: CSCI 1301 
+ * Author(s): $Author
+ * Created on: $Date
+ * Modified on: $Date
+ * Description: $Desc
+**/
+"@
+
+echo $useString
+
+
+#******************************************************************
