@@ -1,6 +1,6 @@
 # I got tired of writing out headers or copy/paste/editing them so I wrote this script.
 # Easy to edit for the header requirements of your business/school/personal life.
-
+# Automatically puts in your clipboard. All you have to do is ctrl V into your IDE
 
 #******************************************************************
 cls
@@ -24,7 +24,9 @@ $useString = @"
 **/
 "@
 
+
 echo $useString
+Set-Clipboard $useString
 
 
 #******************************************************************
